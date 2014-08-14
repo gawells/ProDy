@@ -3,6 +3,7 @@
 
 from collections import defaultdict
 import os.path
+import re
 
 import numpy as np
 
@@ -53,7 +54,7 @@ class Chemical(object):
        len(chemical)"""
 
     __slots__ = ['resname', 'name', 'chain', 'resnum', 'icode',
-                 'natoms', 'description', 'synonyms', 'formula', 'pdbentry']
+                 'natoms', 'description', 'synonyms', 'formula', 'pdbentry','pH','pHstr']
 
     def __init__(self, resname):
 
@@ -370,7 +371,6 @@ def _getBiomoltrans(lines):
             currentBiomolecule = line.split()[-1]
     return dict(biomolecule)
 
-
 def _getResolution(lines):
 
     for i, line in lines['REMARK   2']:
@@ -380,6 +380,54 @@ def _getResolution(lines):
             except:
                 return None
 
+def _getPH(lines):
+# 200: X-ray,210: NMR, 230: neutron diffraction, 
+# 240: electron crystallography, 245: EM, 265: soln scattering
+# 280: X-tal conditions in free form
+
+    for i, line in lines['REMARK 200']+lines['REMARK 210']+lines['REMARK 230']:
+        if re.search('PH\s+:',line):
+            try:
+                return float(line[45:50])
+            except:
+                return float('nan')
+
+    for i, line in lines['REMARK 245']+lines['REMARK 245']:
+        if re.search('PH\s+:',line):
+            try:
+                return float(line[46:51])
+            except:
+                return float('nan')
+
+    for i, line in lines['REMARK 265']:
+        if re.search('PH\s+:',line):
+            try:
+                return float(line[56:61])
+            except:
+                return float('nan')
+#None doesn't work 
+
+def _getPHstr(lines):    
+    for i, line in lines['REMARK 200']+lines['REMARK 210']+lines['REMARK 230']:
+        if re.search('PH\s+:',line):
+            try:
+                return line[45:]
+            except:
+                return ''
+
+    for i, line in lines['REMARK 240']+lines['REMARK 245']:
+        if re.search('PH\s+:',line):
+            try:
+                return line[46:]
+            except:
+                return ''
+
+    for i, line in lines['REMARK 265']:
+        if re.search('PH\s+:',line):
+            try:
+                return line[56:]
+            except:
+                return ''
 
 def _getSpaceGroup(lines):
 
@@ -816,6 +864,8 @@ _PDB_HEADER_MAP = {
     'polymers': _getPolymers,
     'reference': _getReference,
     'resolution': _getResolution,
+    'pH': _getPH,
+    'pHstr': _getPHstr,
     'biomoltrans': _getBiomoltrans,
     'version': _getVersion,
     'deposition_date': lambda lines: lines['HEADER'][0][1][50:59].strip()
