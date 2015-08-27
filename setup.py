@@ -117,7 +117,7 @@ setup(
     name='ProDy',
     version=__version__,
     author='Ahmet Bakan',
-    author_email='ahb12@pitt.edu',
+    author_email='cihank@pitt.edu',
     description='A Python Package for Protein Dynamics Analysis',
     long_description=long_description,
     url='http://www.csb.pitt.edu/ProDy',

@@ -85,7 +85,6 @@ class ANMBase(NMA):
             default is **False** since KDTree method is slower
         :type kdtree: bool
 
-
         Instances of :class:`Gamma` classes and custom functions are
         accepted as *gamma* argument.
 
@@ -217,6 +216,12 @@ class ANMBase(NMA):
             if isinstance(self._hessian, np.ndarray):
                 values, vectors = linalg.eigh(self._hessian, turbo=turbo,
                                               eigvals=eigvals)
+		if values[0]<-1:
+		    valuesr, vectorsr = linalg.eig(self._hessian)
+		    values = valuesr[::-1]
+		    vectors = vectorsr[::-1]
+		    values = values[:n_modes+shift]
+		    vectors = vectors[:n_modes+shift]
             else:
                 try:
                     from scipy.sparse import linalg as scipy_sparse_la
@@ -238,7 +243,7 @@ class ANMBase(NMA):
             if n_modes is not None:
                 LOGGER.info('Scipy is not found, all modes are calculated.')
             values, vectors = linalg.eigh(self._hessian)
-        n_zeros = sum(values < ZERO)
+        n_zeros = sum(values < ZERO) 
         if n_zeros < 6:
             LOGGER.warning('Less than 6 zero eigenvalues are calculated.')
             shift = n_zeros - 1
