@@ -107,6 +107,11 @@ from .trajectory import *
 __all__.extend(trajectory.__all__)
 __all__.append('trajectory')
 
+from . import utilities
+from .utilities import *
+__all__.extend(utilities.__all__)
+__all__.append('utilities')
+
 #from . import comd
 #from .comd import *
 #__all__.extend(comd.__all__)
