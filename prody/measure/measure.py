@@ -139,22 +139,26 @@ def getDistance(coords1, coords2, unitcell=None):
         diff = subtract(diff, round(diff/unitcell)*unitcell, diff)
     return sqrt(power(diff, 2, diff).sum(axis=-1))
 
-
 def calcAngle(atoms1, atoms2, atoms3, radian=False):
     """Return the angle between atoms in degrees."""
 
-    if not isinstance(atoms1, Atomic):
-        raise TypeError('atoms1 must be an Atomic instance')
-    if not isinstance(atoms2, Atomic):
-        raise TypeError('atoms2 must be an Atomic instance')
-    if not isinstance(atoms3, Atomic):
-        raise TypeError('atoms3 must be an Atomic instance')
-    if not atoms1.numAtoms() == atoms2.numAtoms() == atoms3.numAtoms():
-        raise ValueError('all arguments must have same number of atoms')
-
-    return getAngle(atoms1._getCoords(), atoms2._getCoords(),
-                    atoms3._getCoords(), radian)
-
+    if not isinstance(atoms1, ndarray):
+        try:
+            atoms1 = atoms1._getCoords()
+        except AttributeError:
+            raise TypeError('atoms1 must be Atomic instance or an array')
+    if not isinstance(atoms2, ndarray):
+        try:
+            atoms2 = atoms2._getCoords()
+        except AttributeError:
+            raise TypeError('atoms3 must be Atomic instance or an array')
+    if not isinstance(atoms3, ndarray):
+        try:
+            atoms3 = atoms3._getCoords()
+        except AttributeError:
+            raise TypeError('atoms3 must be Atomic instance or an array')
+   
+    return getAngle(atoms1, atoms2, atoms3, radian)
 
 def getAngle(coords1, coords2, coords3, radian):
     """Return bond angle in degrees."""
@@ -168,26 +172,32 @@ def getAngle(coords1, coords2, coords3, radian):
     else:
         return rad * RAD2DEG
 
-
 def calcDihedral(atoms1, atoms2, atoms3, atoms4, radian=False):
     """Return the dihedral angle between atoms in degrees."""
 
-    if not isinstance(atoms1, Atomic):
-        raise TypeError('atoms1 must be an Atomic instance')
-    if not isinstance(atoms2, Atomic):
-        raise TypeError('atoms2 must be an Atomic instance')
-    if not isinstance(atoms3, Atomic):
-        raise TypeError('atoms3 must be an Atomic instance')
-    if not isinstance(atoms4, Atomic):
-        raise TypeError('atoms4 must be an Atomic instance')
-    if not (atoms1.numAtoms() == atoms2.numAtoms() ==
-            atoms3.numAtoms() == atoms4.numAtoms()):
-        raise ValueError('all arguments must have same number of atoms')
+    if not isinstance(atoms1, ndarray):
+        try:
+            atoms1 = atoms1._getCoords()
+        except AttributeError:
+            raise TypeError('atoms1 must be Atomic instance or an array')
+    if not isinstance(atoms2, ndarray):
+        try:
+            atoms2 = atoms2._getCoords()
+        except AttributeError:
+            raise TypeError('atoms3 must be Atomic instance or an array')
+    if not isinstance(atoms3, ndarray):
+        try:
+            atoms3 = atoms3._getCoords()
+        except AttributeError:
+            raise TypeError('atoms3 must be Atomic instance or an array')
+    if not isinstance(atoms4, ndarray):
+        try:
+            atoms4 = atoms4._getCoords()
+        except AttributeError:
+            raise TypeError('atoms4 must be Atomic instance or an array')
 
-    return getDihedral(atoms1._getCoords(), atoms2._getCoords(),
-                       atoms3._getCoords(), atoms4._getCoords(), radian)
-
-
+    return getDihedral(atoms1, atoms2, atoms3, atoms4, radian)
+      
 def getDihedral(coords1, coords2, coords3, coords4, radian=False):
     """Return the dihedral angle in degrees."""
 
