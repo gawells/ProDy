@@ -23,7 +23,7 @@ __all__ = ['gunzip', 'backupFile', 'openFile',
            'PLATFORM', 'USERHOME']
 
 major, minor = sys.version_info[:2]
-if major > 2 and minor <= 3:
+if major > 2 and minor <= 5:
     import gzip
     from gzip import GzipFile
     import io
