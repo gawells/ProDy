@@ -121,9 +121,12 @@ def showProtein(*atoms, **kwargs):
         show = Axes3D(cf)
     from matplotlib import colors
     cnames = dict(colors.cnames)
+    cnamesCopy = dict(colors.cnames)
     wcolor = kwargs.get('water', 'red').lower()
     avoid = np.array(colors.hex2color(cnames.pop(wcolor, cnames.pop('red'))))
-    for cn, val in cnames.items():  # PY3K: OK
+    avoid = np.array(colors.hex2color(cnamesCopy.pop(wcolor, cnamesCopy.pop('red'))))
+
+    for cn, val in cnamesCopy.items():  # PY3K: OK
         clr = np.array(colors.hex2color(val))
         if clr.sum() > 2.4:
             cnames.pop(cn)
