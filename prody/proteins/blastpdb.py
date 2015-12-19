@@ -121,7 +121,7 @@ def blastPDB(sequence, filename=None, **kwargs):
     else:
         if not ext_xml:
             filename += '.xml'
-        out = open(filename, 'w')
+        out = open(filename, 'wb')
         out.write(results)
         out.close()
         LOGGER.info('Results are saved as {0}.'.format(repr(filename)))
