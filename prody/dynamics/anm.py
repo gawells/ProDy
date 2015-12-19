@@ -15,6 +15,7 @@ from .gnm import GNMBase, ZERO, checkENMParameters
 
 __all__ = ['ANM', 'calcANM']
 
+#dummy change
 
 class ANMBase(NMA):
 
@@ -216,12 +217,15 @@ class ANMBase(NMA):
             if isinstance(self._hessian, np.ndarray):
                 values, vectors = linalg.eigh(self._hessian, turbo=turbo,
                                               eigvals=eigvals)
+<<<<<<< HEAD
             if values[0]<-1:
                 valuesr, vectorsr = linalg.eig(self._hessian)
                 values = valuesr[::-1]
                 vectors = vectorsr[::-1]
                 values = values[:n_modes+shift]
                 vectors = vectors[:n_modes+shift]
+=======
+>>>>>>> 55ac2d1e10fe8657e9fc29c37d4b78391665074e
             else:
                 try:
                     from scipy.sparse import linalg as scipy_sparse_la
@@ -242,8 +246,9 @@ class ANMBase(NMA):
         else:
             if n_modes is not None:
                 LOGGER.info('Scipy is not found, all modes are calculated.')
-            values, vectors = linalg.eigh(self._hessian)
-        n_zeros = sum(values < ZERO) 
+            values, vectors = np.linalg.eigh(self._hessian)
+        n_zeros = sum(values < ZERO)
+
         if n_zeros < 6:
             LOGGER.warning('Less than 6 zero eigenvalues are calculated.')
             shift = n_zeros - 1
@@ -252,9 +257,13 @@ class ANMBase(NMA):
             shift = n_zeros - 1
         if zeros:
             shift = -1
-        self._eigvals = values[1+shift:]
+        if n_zeros > n_modes:
+            self._eigvals = values[1+shift:]
+        else:
+            self._eigvals = values[1+shift:]
         self._vars = 1 / self._eigvals
         self._trace = self._vars.sum()
+        
         if shift:
             self._array = vectors[:, 1+shift:].copy()
         else:
