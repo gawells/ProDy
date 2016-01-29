@@ -576,5 +576,5 @@ def msaeye(msa, unique, turbo):
 
     toc1 = timeit.default_timer()
     elapsed1 = toc1 - tic1
-    print elapsed1
+    print (elapsed1)
 

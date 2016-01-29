@@ -94,7 +94,20 @@ def parseSTRIDE(stride, ag):
     for line in stride:
         if not line.startswith('ASG '):
             continue
-        res = ag[(line[9], int(line[10:15]), line[15].strip())]
+        try:
+            res = ag[(line[9], int(line[10:15]), line[15].strip())]
+        except ValueError:
+            # Found odd case in PDB 2eq6: 'duplicate' residue at 174,
+            # one a GLY, the other a GLU. GLY is labelled 174A
+            # but both are continuous in the structure and not alt-confs
+            chain = line[9]
+            resindex = int(line[16:21])
+            alt_conf = line[15].strip()
+            if not alt_conf:
+                res = ag.select('chain %s and resindex %s'%(chain,resindex))
+            else:
+                res = ag.select('chain %s and resindex %s and altconf %s'%(chain,resindex,alt_conf))
+
         if res is None:
             continue
         indices = res.getIndices()

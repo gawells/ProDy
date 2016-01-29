@@ -239,11 +239,7 @@ class exANM(ANMBase):
         self._hessian = ss - np.dot(so, np.dot(linalg.inv(oo), os))
         LOGGER.report('Hessian was built in %.2fs.', label='_exanm')
         self._dof = self._hessian.shape[0]
-<<<<<<< HEAD
-	
-=======
-    
->>>>>>> 55ac2d1e10fe8657e9fc29c37d4b78391665074e
+
     def calcModes(self, n_modes=20, zeros=False, turbo=True):
         """Calculate normal modes.  This method uses :func:`scipy.linalg.eigh`
         function to diagonalize the Hessian matrix. When Scipy is not found,

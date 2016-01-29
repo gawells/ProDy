@@ -217,15 +217,12 @@ class ANMBase(NMA):
             if isinstance(self._hessian, np.ndarray):
                 values, vectors = linalg.eigh(self._hessian, turbo=turbo,
                                               eigvals=eigvals)
-<<<<<<< HEAD
             if values[0]<-1:
                 valuesr, vectorsr = linalg.eig(self._hessian)
                 values = valuesr[::-1]
                 vectors = vectorsr[::-1]
                 values = values[:n_modes+shift]
                 vectors = vectors[:n_modes+shift]
-=======
->>>>>>> 55ac2d1e10fe8657e9fc29c37d4b78391665074e
             else:
                 try:
                     from scipy.sparse import linalg as scipy_sparse_la

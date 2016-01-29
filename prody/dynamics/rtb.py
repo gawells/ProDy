@@ -139,12 +139,12 @@ class RTB(ANMBase):
                      float(cutoff), float(gamma),
                      scale=float(kwargs.get('scale', 1.0)),
                      memlo=float(kwargs.get('membrane_low', 1.0)),
-<<<<<<< HEAD
-                     memhi=float(kwargs.get('membrane_high', -1.0)),)
-=======
+# <<<<<<< HEAD
+                     # memhi=float(kwargs.get('membrane_high', -1.0)),)
+# =======
                      memhi=float(kwargs.get('membrane_high', 1.0)),)
 
->>>>>>> 55ac2d1e10fe8657e9fc29c37d4b78391665074e
+# >>>>>>> 55ac2d1e10fe8657e9fc29c37d4b78391665074e
         self._dof = self._hessian.shape[0]
         LOGGER.report('Hessian was built in %.2fs.', label='_rtb')
 
