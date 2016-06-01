@@ -441,6 +441,7 @@ all alphanumeric characters."""
 
 import sys
 from re import compile as re_compile
+from collections import Iterable
 
 import numpy as np
 from numpy import array, ndarray, ones, zeros, arange
@@ -775,10 +776,15 @@ def rangeParseAction(sel, loc, tokens):
 
     if start > stop:
         raise SelectionError(sel, loc, 'range start value ({0}) is greater '
-                             'than and stop value ({1})'
+                             'than stop value ({1})'
                              .format(repr(start), repr(stop)))
     elif start == stop:
-        return first
+        if sep == ':':
+            raise SelectionError(sel, loc, 'range start value ({0}) is greater '
+                             'than or equal to stop value ({1})'
+                             .format(repr(start), repr(stop)))
+        else:
+            return first
 
     if sep == 'to':
         comp = '<='
@@ -1314,8 +1320,10 @@ class Select(object):
 
         debug(sel, loc, '_and2', tokens)
         if NUMB: return
-
-        if tokens[0] == 'and' or tokens[-1] == 'and':
+        
+        firsttoken = tokens[0] if not isinstance(tokens[0], Iterable) else list(tokens[0])
+        lasttoken = tokens[-1] if not isinstance(tokens[-1], Iterable) else list(tokens[-1])
+        if firsttoken == 'and' or lasttoken == 'and':
             return None, SelectionError(sel, loc, '{0} operator must be '
                 'surrounded with arguments'.format(repr('and')), [tokens[0]])
 
@@ -2264,7 +2272,7 @@ class Select(object):
                 value = float(token)
             except (TypeError, ValueError):
                 icode = token[-1]
-                value = token[:1]
+                value = token[:-1]
                 try:
                     value = int(value)
                 except:
@@ -2292,7 +2300,7 @@ class Select(object):
             if subset is None:
                 rnic = zip(resnums, icode) # PY3K: OK
             else:
-                rnic = zip(resnums, icode[subset]) # PY3K: OK
+                rnic = zip(resnums[subset], icode[subset]) # PY3K: OK
 
             if torf is None:
                 torf = array([val in wicode for val in rnic], bool)

@@ -64,6 +64,9 @@ def calcShannonEntropy(msa, ambiguity=True, omitgaps=True, **kwargs):
 
     msa = getMSA(msa)
     length = msa.shape[1]
+    if msa.shape[0]<100:
+        LOGGER.warning('SCA performs the best with higher number of sequences, and '
+                       'minimal number of sequences is recommended as 100.')
     entropy = empty(length, float)
     from .msatools import msaentropy
     return msaentropy(msa, entropy,
@@ -471,6 +474,9 @@ def buildDirectInfoMatrix(msa, seqid=.8, pseudo_weight=.5, refine=False,
     from numpy import matrix
 
     LOGGER.timeit('_di')
+    if msa.shape[0]<250:
+        LOGGER.warning('DI performs the best with higher number of sequences, and '
+                       'minimal number of sequences is recommended as 250.')
     refine = 1 if refine else 0
     # msadipretest get some parameter from msa to set matrix size
     length, q = msadipretest(msa, refine=refine)
@@ -571,10 +577,9 @@ def msaeye(msa, unique, turbo):
                         ncols += 1
                         if iseq[i,k]==iseq[j,k]:
                             score+=1
-                array[i,j]= float(score)/ncols#float(sum((iseq[i] == iseq[j])*(iseq[i]*iseq[j]!=0))) / sum(iseq[i]*iseq[j]!=0) 
+                array[i,j]= float(score)/ncols#float(sum((iseq[i] == iseq[j])*(iseq[i]*iseq[j]!=0))) / sum(iseq[i]*iseq[j]!=0)
                 array[j,i]=array[i,j]
 
     toc1 = timeit.default_timer()
     elapsed1 = toc1 - tic1
-    print (elapsed1)
-
+    print(elapsed1)

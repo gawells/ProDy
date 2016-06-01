@@ -4,15 +4,20 @@
 __author__ = 'Anindita Dutta, Ahmet Bakan, Cihan Kaya'
 
 import re
-import urllib
-from os.path import join, isfile
 
+from os.path import join, isfile
 from prody import LOGGER, PY3K
 from prody.utilities import makePath, openURL, gunzip, openFile, dictElement
 from prody.utilities import relpath
 
+if PY3K:
+    import urllib.parse as urllib
+    import urllib.request as urllib2
+else:
+    import urllib
+    import urllib2
 
-__all__ = ['searchPfam', 'fetchPfamMSA']
+__all__ = ['searchPfam', 'fetchPfamMSA', 'searchUniprotID']
 
 FASTA = 'fasta'
 SELEX = 'selex'
@@ -70,10 +75,10 @@ def searchPfam(query, **kwargs):
             raise ValueError(repr(seq) + ' is not a valid sequence')
         fseq = '>Seq\n' + seq
         parameters = { 'hmmdb' : 'pfam', 'seq': fseq }
-        enc_params = urllib.urlencode(parameters)
-        request = urllib.request.Request('http://hmmer.janelia.org/search/hmmscan', enc_params)
+        enc_params = urllib.urlencode(parameters).encode('utf-8')
+        request = urllib2.Request('http://www.ebi.ac.uk/Tools/hmmer/search/hmmscan', enc_params)
 
-        url = ( urllib.request.urlopen(request).geturl() + '?output=xml') 
+        url = ( urllib2.urlopen(request).geturl() + '?output=xml') 
         LOGGER.debug('Submitted Pfam search for sequence "{0}...".'
                      .format(seq[:MINSEQLEN]))
 
@@ -149,7 +154,7 @@ def searchPfam(query, **kwargs):
         except Exception:
             pass
         else:
-            if xml:
+            if xml not in ['PEND','RUN']:
                 break
 
     if not xml:
@@ -207,6 +212,72 @@ def searchPfam(query, **kwargs):
         LOGGER.info(query + ' did not match any Pfam families.')
     return matches
 
+def searchUniprotID(query, search_b=False, skip_a=False, **kwargs):
+    """Return Pfam search results in a dictionary.  Matching Pfam accession
+    as keys will map to evalue, alignment start and end residue positions.
+
+    :arg query: UniProt ID, PDB identifier, protein sequence, or a sequence
+        file, sequence queries must not contain without gaps and must be at
+        least 16 characters long
+    :type query: str
+
+    :arg search_b: search Pfam-B families when **True**
+    :type search_b: bool
+
+    :arg skip_a: do not search Pfam-A families when **True**
+    :type skip_a: bool
+
+    :arg ga: use gathering threshold when **True**
+    :type ga: bool
+
+    :arg evalue: user specified e-value cutoff, must be smaller than 10.0
+    :type evalue: float
+
+    :arg timeout: timeout for blocking connection attempt in seconds, default
+        is 60
+    :type timeout: int
+
+    *query* can also be a PDB identifier, e.g. ``'1mkp'`` or ``'1mkpA'`` with
+    chain identifier.  UniProt ID of the specified chain, or the first
+    protein chain will be used for searching the Pfam database."""
+
+    prefix = '{http://pfam.xfam.org/}'
+    query = str(query)
+    seq = ''.join(query.split())
+
+    import xml.etree.cElementTree as ET
+    LOGGER.timeit('_pfam')
+    timeout = int(kwargs.get('timeout', 60))
+    url = 'http://pfam.xfam.org/protein/' + seq + '?output=xml'
+
+    LOGGER.debug('Retrieving Pfam search results: ' + url)
+    xml = None
+    while LOGGER.timing('_pfam') < timeout:
+        try:
+            xml = openURL(url, timeout=timeout).read()
+        except Exception:
+            pass
+        else:
+            if xml:
+                break
+
+    if not xml:
+        raise IOError('Pfam search timed out or failed to parse results '
+                      'XML, check URL: ' + url)
+    else:
+        LOGGER.report('Pfam search completed in %.2fs.', '_pfam')
+
+    if xml.find(b'There was a system error on your last request.') > 0:
+        LOGGER.warn('No Pfam matches found for: ' + seq)
+        return None
+
+    try:
+        root = ET.XML(xml)
+    except Exception as err:
+        raise ValueError('failed to parse results XML, check URL: ' + url)
+
+    result = root[0].get('id')
+    return result
 
 def fetchPfamMSA(acc, alignment='full', compressed=False, **kwargs):
     """Return a path to the downloaded Pfam MSA file.
@@ -242,7 +313,7 @@ def fetchPfamMSA(acc, alignment='full', compressed=False, **kwargs):
 
     :arg folder: output folder, default is ``'.'``"""
 
-    url = 'http://pfam.sanger.ac.uk/family/acc?id=' + acc
+    url = 'http://pfam.xfam.org/family/acc?id=' + acc
     handle = openURL(url)
     orig_acc = acc
     acc = handle.readline().strip()
@@ -258,13 +329,13 @@ def fetchPfamMSA(acc, alignment='full', compressed=False, **kwargs):
         raise ValueError('alignment must be one of full, seed, ncbi or'
                          ' metagenomics')
     if alignment == 'ncbi' or alignment == 'metagenomics':
-        url = ('http://pfam.sanger.ac.uk/family/' + acc + '/alignment/' +
+        url = ('http://pfam.xfam.org/family/' + acc + '/alignment/' +
                alignment + '/gzipped')
         url_flag = True
         extension = '.sth'
     else:
         if not kwargs:
-            url = ('http://pfam.sanger.ac.uk/family/' + acc + '/alignment/' +
+            url = ('http://pfam.xfam.org/family/' + acc + '/alignment/' +
                    alignment + '/gzipped')
             url_flag = True
             extension = '.sth'
@@ -295,7 +366,7 @@ def fetchPfamMSA(acc, alignment='full', compressed=False, **kwargs):
             if order not in FORMAT_OPTIONS['order']:
                 raise ValueError('order must be of type tree or alphabetical')
 
-            url = ('http://pfam.sanger.ac.uk/family/' + acc + '/alignment/'
+            url = ('http://pfam.xfam.org/family/' + acc + '/alignment/'
                    + alignment + '/format?format=' + align_format +
                    '&alnType=' + alignment + '&order=' + order[0] +
                    '&case=' + inserts[0] + '&gaps=' + gaps + '&download=1')
